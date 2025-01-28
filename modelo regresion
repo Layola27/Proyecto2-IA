@@ -1,0 +1,35 @@
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+
+# Preparar los datos para la regresión
+def prepare_regression_data(data, date_column):
+    data['Trimestre'] = pd.to_datetime(data[date_column]).dt.to_period('Q')
+    grouped = data.groupby('Trimestre').size().reset_index(name='Cantidad')
+    grouped['Trimestre_num'] = grouped['Trimestre'].astype(str).str.extract(r'(\d+)$').astype(int)
+    return grouped
+
+# Ajustar el modelo de regresión
+def fit_regression(data):
+    X = data['Trimestre_num'].values.reshape(-1, 1)
+    y = data['Cantidad'].values
+    model = LinearRegression().fit(X, y)
+    data['Predicciones'] = model.predict(X)
+    return model, data
+
+# Cargar los datos separados
+usuarios_activos = pd.read_csv('usuarios_activos.csv')
+usuarios_eliminados = pd.read_csv('usuarios_eliminados.csv')
+
+# Aplicar la regresión a los usuarios activos
+activos_data = prepare_regression_data(usuarios_activos, 'created_at_x')
+activos_model, activos_result = fit_regression(activos_data)
+
+# Aplicar la regresión a los usuarios eliminados
+eliminados_data = prepare_regression_data(usuarios_eliminados, 'created_at_x')
+eliminados_model, eliminados_result = fit_regression(eliminados_data)
+
+# Guardar los resultados
+activos_result.to_csv('usuarios_activos_regresion.csv', index=False)
+eliminados_result.to_csv('usuarios_eliminados_regresion.csv', index=False)
+
+print("Regresión aplicada. Archivos guardados: 'usuarios_activos_regresion.csv', 'usuarios_eliminados_regresion.csv'")
