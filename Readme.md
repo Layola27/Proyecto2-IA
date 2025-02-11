@@ -91,9 +91,12 @@ merged_df.drop(columns=["cash_request_id"], inplace=True)
 # Mostrar las primeras filas para verificar la fusión
 print(merged_df.head())
 
+
+
 ```python
 merged_df.info()
 
+![image](https://github.com/user-attachments/assets/03b0dffa-9ff7-413b-8d5e-be616550fbe1)
 
 
 
