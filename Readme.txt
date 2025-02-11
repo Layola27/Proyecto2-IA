@@ -42,9 +42,8 @@ Proporciona definiciones y referencias clave para comprender los términos utili
 Este estudio busca responder preguntas clave sobre el uso y rendimiento de los servicios financieros de Business Payments. Los principales objetivos incluyen:
 - **Exploración y limpieza de datos** para garantizar calidad y consistencia.
 - **Identificación de patrones de uso y frecuencia de pagos** para entender el comportamiento de los usuarios.
-- **Evaluación de incidentes financieros** y su impacto en la rentabilidad del servicio.
 - **Análisis de cohortes** para entender la retención y el comportamiento de los usuarios a lo largo del tiempo.
-- **Modelado predictivo** para detectar posibles anomalías y fraudes financieros.
+- **Modelo de clasificación** para detectar usuarios con possibilidad de irse de la plataforma.
 
 ## Tecnologías y Herramientas Utilizadas
 - **Python**: Análisis de datos con `pandas`, `numpy`, `matplotlib`, `seaborn`.
@@ -52,11 +51,50 @@ Este estudio busca responder preguntas clave sobre el uso y rendimiento de los s
 - **Jupyter Notebook**: Exploración de datos interactiva.
 - **Excel**: Revisión y validación de datos adicionales.
 
-## Contribución
-Si deseas contribuir a este análisis, puedes proponer mejoras en los enfoques analíticos, visualizaciones o modelos predictivos. Se recomienda seguir buenas prácticas en limpieza y validación de datos antes de realizar cualquier interpretación.
+##EDA
 
----
+Cargar Archivos:
 
-Este README sirve como guía introductoria al proyecto y ayudará a comprender la estructura y objetivos del análisis de Business Payments.
+```python
+import pandas as pd
+# Cargar los datasets
+fees_path = "drive/MyDrive/ColabNotebooks/Business_Payments/extract - fees - data analyst - .csv"
+cash_request_path = "drive/MyDrive/ColabNotebooks/Business_Payments/extract - cash request - data analyst.csv"
+
+fees_df = pd.read_csv(fees_path)
+cash_request_df = pd.read_csv(cash_request_path)
+
+Join (Left):
+
+```python
+import pandas as pd
+
+# Cargar los datasets
+fees_path = "drive/MyDrive/ColabNotebooks/Business_Payments/extract - fees - data analyst - .csv"
+cash_request_path = "drive/MyDrive/ColabNotebooks/Business_Payments/extract - cash request - data analyst.csv"
+
+fees_df = pd.read_csv(fees_path)
+cash_request_df = pd.read_csv(cash_request_path)
+
+# Fusionar los datasets usando cash_request_id para vincularlos
+merged_df = cash_request_df.merge(
+    fees_df,
+    left_on="id",  # En cash_request_df la columna se llama "id"
+    right_on="cash_request_id",  # En fees_df la clave es "cash_request_id"
+    how="left",  # Mantener todas las filas de cash_request_df
+    suffixes=("", "_fees")  # Agregar sufijo "_fees" a las columnas duplicadas
+)
+
+# Eliminar la columna cash_request_id de fees después del merge, ya que es redundante
+merged_df.drop(columns=["cash_request_id"], inplace=True)
+
+# Mostrar las primeras filas para verificar la fusión
+print(merged_df.head())
+
+```python
+merged_df.info()
+
+
+
 
 
