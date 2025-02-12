@@ -224,3 +224,199 @@ Activos/Eliminados:
 
 <img width="1191" alt="image" src="https://github.com/user-attachments/assets/9a653250-9280-4592-9f00-8d5d2eba307f" />
 
+
+## INGENIERIA DE DATOS
+
+Separar el dataset en activos/eliminados:
+
+```python
+# Separar los datos en usuarios activos y eliminados
+usuarios_activos = data[data['user_id'].notna()]
+usuarios_eliminados = data[data['deleted_account_id'].notna()]
+
+# Guardar los datos en archivos CSV separados
+usuarios_activos.to_csv('drive/MyDrive/ColabNotebooks/Business_Payments/usuarios_activos.csv', index=False)
+usuarios_eliminados.to_csv('drive/MyDrive/ColabNotebooks/Business_Payments/usuarios_eliminados.csv', index=False)
+```
+
+```python
+# Eliminar columnas no necesarias
+usuarios_activos = usuarios_activos.drop(columns=['deleted_account_id'], errors='ignore')
+usuarios_eliminados = usuarios_eliminados.drop(columns=['user_id'], errors='ignore')
+```
+Convertir fecha a misma zona horaria:
+```python
+# Convertir a datetime si aún no lo es
+usuarios_activos[fecha_column_activos] = pd.to_datetime(usuarios_activos[fecha_column_activos], errors="coerce")
+usuarios_eliminados[fecha_column_eliminados] = pd.to_datetime(usuarios_eliminados[fecha_column_eliminados], errors="coerce")
+
+# Verificar si ya tienen zona horaria asignada y asignar si es necesario
+timezone_origen = "Europe/Madrid"  # Cambia esto si es otro timezone
+
+if usuarios_activos[fecha_column_activos].dt.tz is None:
+    usuarios_activos[fecha_column_activos] = usuarios_activos[fecha_column_activos].dt.tz_localize(timezone_origen)
+
+if usuarios_eliminados[fecha_column_eliminados].dt.tz is None:
+    usuarios_eliminados[fecha_column_eliminados] = usuarios_eliminados[fecha_column_eliminados].dt.tz_localize(timezone_origen)
+
+# Convertir a UTC
+usuarios_activos[fecha_column_activos] = usuarios_activos[fecha_column_activos].dt.tz_convert("UTC")
+usuarios_eliminados[fecha_column_eliminados] = usuarios_eliminados[fecha_column_eliminados].dt.tz_convert("UTC")
+```
+
+Crear columna total solicitudes: 
+
+```python
+# Contar solicitudes por usuario en usuarios activos
+solicitudes_activos = usuarios_activos["user_id"].value_counts().reset_index()
+solicitudes_activos.columns = ["user_id", "total_solicitudes_usuario"]
+
+# Unir la información al dataset original
+usuarios_activos = usuarios_activos.merge(solicitudes_activos, on="user_id", how="left")
+
+# Contar solicitudes por usuario en usuarios eliminados
+solicitudes_eliminados = usuarios_eliminados["deleted_account_id"].value_counts().reset_index()
+solicitudes_eliminados.columns = ["deleted_account_id", "total_solicitudes_usuario"]
+
+# Unir la información al dataset original
+usuarios_eliminados = usuarios_eliminados.merge(solicitudes_eliminados, on="deleted_account_id", how="left")
+```
+
+
+Total solicitudes canceladas:
+
+```python
+import pandas as pd
+
+# Contar operaciones canceladas o rechazadas en usuarios activos
+canceladas_rechazadas_activos = usuarios_activos[
+    usuarios_activos["status_cash_request"].isin(["cancelled", "rejected"])
+]["user_id"].value_counts().reset_index()
+canceladas_rechazadas_activos.columns = ["user_id", "total_operaciones_canceladas_rechazadas"]
+
+# Unir la información al dataset original
+usuarios_activos = usuarios_activos.merge(canceladas_rechazadas_activos, on="user_id", how="left")
+usuarios_activos["total_operaciones_canceladas_rechazadas"].fillna(0, inplace=True)
+
+# Contar operaciones canceladas o rechazadas en usuarios eliminados
+canceladas_rechazadas_eliminados = usuarios_eliminados[
+    usuarios_eliminados["status_cash_request"].isin(["cancelled", "rejected"])
+]["deleted_account_id"].value_counts().reset_index()
+canceladas_rechazadas_eliminados.columns = ["deleted_account_id", "total_operaciones_canceladas_rechazadas"]
+
+# Unir la información al dataset original
+usuarios_eliminados = usuarios_eliminados.merge(canceladas_rechazadas_eliminados, on="deleted_account_id", how="left")
+usuarios_eliminados["total_operaciones_canceladas_rechazadas"].fillna(0, inplace=True)
+
+# Verificar resultado
+print(usuarios_activos[["user_id", "total_operaciones_canceladas_rechazadas"]].head())
+print(usuarios_eliminados[["deleted_account_id", "total_operaciones_canceladas_rechazadas"]].head())
+```
+
+Crear columnas diferentes valores de fecha:
+
+Mes:
+
+```python
+# Convertir a zona horaria UTC
+usuarios_activos[fecha_column_activos] = pd.to_datetime(usuarios_activos[fecha_column_activos], utc=True, errors="coerce")
+usuarios_eliminados[fecha_column_eliminados] = pd.to_datetime(usuarios_eliminados[fecha_column_eliminados], utc=True, errors="coerce")
+
+# Extraer el mes en formato YYYY-mm
+usuarios_activos["mes_solicitud"] = usuarios_activos[fecha_column_activos].dt.strftime("%Y-%m")
+usuarios_eliminados["mes_solicitud"] = usuarios_eliminados[fecha_column_eliminados].dt.strftime("%Y-%m")
+
+# Verificar resultado
+print(usuarios_activos[["mes_solicitud"]].head())
+print(usuarios_eliminados[["mes_solicitud"]].head())
+```
+<img width="129" alt="image" src="https://github.com/user-attachments/assets/b6369b25-13ef-43b1-98d1-382d92e3ae58" />
+
+Semana:
+
+```python
+# Extraer la semana, el nombre del mes y el año
+usuarios_activos["semana_solicitud"] = usuarios_activos[fecha_column_activos].dt.isocalendar().week.astype(str) + "_" + \
+                                       usuarios_activos[fecha_column_activos].dt.strftime("%B") + "_" + \
+                                       usuarios_activos[fecha_column_activos].dt.strftime("%Y")
+
+usuarios_eliminados["semana_solicitud"] = usuarios_eliminados[fecha_column_eliminados].dt.isocalendar().week.astype(str) + "_" + \
+                                          usuarios_eliminados[fecha_column_eliminados].dt.strftime("%B") + "_" + \
+                                          usuarios_eliminados[fecha_column_eliminados].dt.strftime("%Y")
+```
+
+<img width="154" alt="image" src="https://github.com/user-attachments/assets/3cd836fd-5905-4478-ae48-e9b353c1c47f" />
+
+Dia:
+
+```python
+# Extraer el día de la semana, la semana del año, el nombre del mes y el año
+usuarios_activos["dia_semana_solicitud"] = usuarios_activos[fecha_column_activos].dt.strftime("%A") + "_" + \
+                                           usuarios_activos[fecha_column_activos].dt.isocalendar().week.astype(str) + "_" + \
+                                           usuarios_activos[fecha_column_activos].dt.strftime("%B") + "_" + \
+                                           usuarios_activos[fecha_column_activos].dt.strftime("%Y")
+
+usuarios_eliminados["dia_semana_solicitud"] = usuarios_eliminados[fecha_column_eliminados].dt.strftime("%A") + "_" + \
+                                              usuarios_eliminados[fecha_column_eliminados].dt.isocalendar().week.astype(str) + "_" + \
+                                              usuarios_eliminados[fecha_column_eliminados].dt.strftime("%B") + "_" + \
+                                              usuarios_eliminados[fecha_column_eliminados].dt.strftime("%Y")
+```
+
+<img width="218" alt="image" src="https://github.com/user-attachments/assets/bd5a0f67-b7d5-49cd-9ab2-9e58b408dc25" />
+
+Hora:
+
+```python
+# Extraer la hora, día de la semana, la semana del año, el nombre del mes y el año
+usuarios_activos["hora_solicitud"] = usuarios_activos[fecha_column_activos].dt.hour.astype(str) + "_" + \
+                                     usuarios_activos[fecha_column_activos].dt.strftime("%A") + "_" + \
+                                     usuarios_activos[fecha_column_activos].dt.isocalendar().week.astype(str) + "_" + \
+                                     usuarios_activos[fecha_column_activos].dt.strftime("%B") + "_" + \
+                                     usuarios_activos[fecha_column_activos].dt.strftime("%Y")
+
+usuarios_eliminados["hora_solicitud"] = usuarios_eliminados[fecha_column_eliminados].dt.hour.astype(str) + "_" + \
+                                        usuarios_eliminados[fecha_column_eliminados].dt.strftime("%A") + "_" + \
+                                        usuarios_eliminados[fecha_column_eliminados].dt.isocalendar().week.astype(str) + "_" + \
+                                        usuarios_eliminados[fecha_column_eliminados].dt.strftime("%B") + "_" + \
+                                        usuarios_eliminados[fecha_column_eliminados].dt.strftime("%Y")
+```
+
+<img width="238" alt="image" src="https://github.com/user-attachments/assets/74dd8249-9af7-4275-bd5a-8c3918d30a6b" />
+
+Tasa Rechazo:
+
+```python
+# Evitar división por cero
+usuarios_activos["tasa_rechazo"] = usuarios_activos["total_operaciones_canceladas_rechazadas"] / usuarios_activos["total_solicitudes_usuario"]
+usuarios_eliminados["tasa_rechazo"] = usuarios_eliminados["total_operaciones_canceladas_rechazadas"] / usuarios_eliminados["total_solicitudes_usuario"]
+```
+
+<img width="111" alt="image" src="https://github.com/user-attachments/assets/2a3e102b-c316-4dd2-b22c-20531d80c75d" />
+
+Pago tardio ratio:
+
+```python
+# Calcular la diferencia en días entre pago y creación
+usuarios_activos["dias_para_pago"] = (usuarios_activos[pago_column_activos] - usuarios_activos[fecha_column_activos]).dt.days
+usuarios_eliminados["dias_para_pago"] = (usuarios_eliminados[pago_column_eliminados] - usuarios_eliminados[fecha_column_eliminados]).dt.days
+
+# Definir pagos tardíos (más de 30 días)
+usuarios_activos["pago_tardio"] = (usuarios_activos["dias_para_pago"] > 30).astype(int)
+usuarios_eliminados["pago_tardio"] = (usuarios_eliminados["dias_para_pago"] > 30).astype(int)
+```
+
+<img width="158" alt="image" src="https://github.com/user-attachments/assets/cfc4d45e-18b1-4a40-b54a-6f5771faa065" />
+
+Solicitudes Modificadas:
+
+```python
+# Contar cuántas veces se ha modificado una solicitud
+usuarios_activos["solicitudes_modificadas"] = usuarios_activos.groupby("user_id")[updated_column_activos].transform("count") - 1
+usuarios_eliminados["solicitudes_modificadas"] = usuarios_eliminados.groupby("deleted_account_id")[updated_column_eliminados].transform("count") - 1
+```
+
+<img width="214" alt="image" src="https://github.com/user-attachments/assets/0f7d8ed2-2531-42b1-b6ee-55a248aa2e05" />
+
+
+
+
