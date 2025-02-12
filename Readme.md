@@ -737,3 +737,286 @@ Importancia de pesos en diferentes modelos:
 
 <img width="1028" alt="image" src="https://github.com/user-attachments/assets/ae75f0ea-7cd5-4cfd-9b19-13b709f301f0" />
 
+
+## Modelo de clasificación por riesgo de abandonar la plataforma
+
+```python
+# Crear las columnas necesarias en ambos datasets
+for df, user_col in zip([usuarios_activos, usuarios_eliminados], ["user_id", "deleted_account_id"]):
+    # Contar total de compras por usuario
+    df["total_compras"] = df.groupby(user_col)["id"].transform("count")
+
+    # Sumar el monto total gastado por usuario
+    df["monto_total"] = df.groupby(user_col)["amount"].transform("sum")
+
+    # Eliminar duplicados para que cada usuario tenga solo una fila
+    df.drop_duplicates(subset=[user_col], inplace=True)
+```
+
+Cluster de datos:
+
+```python
+# Seleccionar características para la clusterización
+X = df[["total_compras", "monto_total"]].copy()
+
+# Escalar los datos para mejor normalización
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Aplicar K-Means con 3 clusters
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+df["cluster_kmeans"] = kmeans.fit_predict(X_scaled)
+
+# Aplicar DBSCAN
+dbscan = DBSCAN(eps=0.8, min_samples=5)  # Ajustar parámetros según datos
+df["cluster_dbscan"] = dbscan.fit_predict(X_scaled)
+```
+<img width="619" alt="image" src="https://github.com/user-attachments/assets/408816c0-94fb-495f-8dc0-f350acd573c0" />
+
+Primer modelo:
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from imblearn.over_sampling import SMOTE
+
+# 📌 1️⃣ Cargar los datasets
+usuarios_activos = pd.read_csv("drive/MyDrive/ColabNotebooks/Business_Payments/usuarios_activos_procesado.csv")
+usuarios_eliminados = pd.read_csv("drive/MyDrive/ColabNotebooks/Business_Payments/usuarios_eliminados_procesado.csv")
+
+# 📌 2️⃣ Convertir variables numéricas que pueden estar en formato string
+cols_numericas = ["total_compras", "monto_total", "tasa_rechazo", "intervalo_promedio_solicitudes", "pago_tardio_ratio"]
+
+for df in [usuarios_activos, usuarios_eliminados]:
+    for col in cols_numericas:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+# 📌 3️⃣ Crear la variable objetivo 'status' (1 = eliminado, 0 = activo)
+usuarios_activos["status"] = 0
+usuarios_eliminados["status"] = 1
+
+# 📌 4️⃣ Unificar ambos datasets en un solo DataFrame
+df_usuarios = pd.concat([usuarios_activos, usuarios_eliminados], ignore_index=True)
+
+# 📌 5️⃣ Seleccionar las características relevantes
+features = ["total_compras", "monto_total", "tasa_rechazo", "intervalo_promedio_solicitudes", "pago_tardio_ratio"]
+X = df_usuarios[features].fillna(0)  # Rellenar posibles valores nulos con 0
+y = df_usuarios["status"]
+
+# 📌 6️⃣ Normalizar las variables numéricas
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# 📌 7️⃣ Aplicar SMOTE para balancear las clases
+smote = SMOTE(sampling_strategy=0.5, random_state=42)  # Ajustamos para que la clase 1 tenga el 50% de la clase 0
+X_resampled, y_resampled = smote.fit_resample(X_scaled, y)
+
+# 📌 8️⃣ Separar datos en entrenamiento y prueba (80% - 20%)
+X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2, random_state=42, stratify=y_resampled)
+
+# 📌 9️⃣ Entrenar el modelo de Regresión Logística con los datos balanceados
+log_reg_smote = LogisticRegression()
+log_reg_smote.fit(X_train, y_train)
+
+# 📌 🔟 Realizar predicciones en el conjunto de prueba
+y_pred_smote = log_reg_smote.predict(X_test)
+y_pred_prob_smote = log_reg_smote.predict_proba(X_test)[:, 1]
+
+# 📌 Evaluar el modelo después de aplicar SMOTE
+accuracy_smote = accuracy_score(y_test, y_pred_smote)
+conf_matrix_smote = confusion_matrix(y_test, y_pred_smote)
+class_report_smote = classification_report(y_test, y_pred_smote)
+```
+Resultado:
+
+<img width="420" alt="image" src="https://github.com/user-attachments/assets/ce1f1fed-3a4c-458f-953a-20e1c56b6b03" />
+
+## Modelo tras agregar variables de kmeans y kernel RBF
+
+<img width="538" alt="image" src="https://github.com/user-attachments/assets/97caad13-7b2d-44df-a091-0fb012b9bcb9" />
+
+Importancia variables:
+
+<img width="905" alt="image" src="https://github.com/user-attachments/assets/5e8eff70-948f-4ce2-a15a-49ed1f0cce12" />
+
+## Aplicar el modelo
+
+```python
+# 📌 1️⃣ Cargar los datos de usuarios activos actuales
+usuarios_activos = pd.read_csv("drive/MyDrive/ColabNotebooks/Business_Payments/usuarios_activos_procesado.csv")
+
+# 📌 2️⃣ Seleccionar las mismas variables predictivas usadas en el modelo
+features_extra = [
+    "total_compras", "monto_total", "tasa_rechazo",
+    "intervalo_promedio_solicitudes", "pago_tardio_ratio", "solicitudes_modificadas", "cluster_kmeans"
+]
+
+# Convertir a valores numéricos
+for col in features_extra:
+    usuarios_activos[col] = pd.to_numeric(usuarios_activos[col], errors="coerce")
+
+# 📌 3️⃣ Normalizar las variables usando el mismo escalador entrenado
+X_activos = usuarios_activos[features_extra].fillna(0)
+X_scaled_activos = scaler_extra.transform(X_activos)  # Usa el scaler ya entrenado
+
+# 📌 4️⃣ Aplicar el modelo para predecir la probabilidad de eliminación
+usuarios_activos["probabilidad_eliminacion"] = best_model.predict_proba(X_scaled_activos)[:, 1]
+
+# 📌 5️⃣ Clasificar usuarios en niveles de riesgo
+def clasificar_riesgo(prob):
+    if prob > 0.7:
+        return "Alto Riesgo 🔴"
+    elif prob > 0.4:
+        return "Riesgo Moderado 🟡"
+    else:
+        return "Bajo Riesgo 🟢"
+
+usuarios_activos["nivel_riesgo"] = usuarios_activos["probabilidad_eliminacion"].apply(clasificar_riesgo)
+```
+
+<img width="527" alt="image" src="https://github.com/user-attachments/assets/82e4bc52-f008-4a85-b514-a79c750f2131" />
+
+
+## Modelo con XGBOOST
+
+Dependencias a instalar en colab:
+
+```bash
+!pip uninstall -y xgboost scikit-learn imbalanced-learn mlxtend
+!pip install --no-cache-dir scikit-learn==1.3.2 imbalanced-learn==0.13.0 mlxtend xgboost==1.7.4
+```
+
+```python
+# Importar librerías necesarias
+import pandas as pd
+import numpy as np
+from xgboost import XGBClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from imblearn.over_sampling import SMOTE
+
+# 📌 1️⃣ Cargar los datasets procesados
+usuarios_activos = pd.read_csv("drive/MyDrive/ColabNotebooks/Business_Payments/usuarios_activos_procesado.csv")
+usuarios_eliminados = pd.read_csv("drive/MyDrive/ColabNotebooks/Business_Payments/usuarios_eliminados_procesado.csv")
+
+# 📌 2️⃣ Crear la variable objetivo 'status' (1 = eliminado, 0 = activo)
+usuarios_activos["status"] = 0
+usuarios_eliminados["status"] = 1
+
+# Unificar ambos datasets en un solo DataFrame
+df_usuarios = pd.concat([usuarios_activos, usuarios_eliminados], ignore_index=True)
+
+# 📌 3️⃣ Selección de Variables Predictivas
+features_xgb = [
+    "total_compras", "monto_total", "tasa_rechazo",
+    "intervalo_promedio_solicitudes", "pago_tardio_ratio", "solicitudes_modificadas","cluster_kmeans"
+]
+
+# Convertir a valores numéricos (por si hay strings)
+for col in features_xgb:
+    df_usuarios[col] = pd.to_numeric(df_usuarios[col], errors="coerce")
+
+# Seleccionar variables y objetivo
+X_xgb = df_usuarios[features_xgb].fillna(0)  # Rellenar valores NaN con 0
+y_xgb = df_usuarios["status"]
+
+# 📌 4️⃣ Normalizar las variables numéricas
+scaler_xgb = StandardScaler()
+X_scaled_xgb = scaler_xgb.fit_transform(X_xgb)
+
+# 📌 5️⃣ Aplicar SMOTE para balancear clases
+smote = SMOTE(sampling_strategy=0.5, random_state=42)  # Ajustamos a 50% de la clase mayoritaria
+X_resampled_xgb, y_resampled_xgb = smote.fit_resample(X_scaled_xgb, y_xgb)
+
+# 📌 6️⃣ Separar en entrenamiento y prueba (80% - 20%)
+X_train_xgb, X_test_xgb, y_train_xgb, y_test_xgb = train_test_split(
+    X_resampled_xgb, y_resampled_xgb, test_size=0.2, random_state=42, stratify=y_resampled_xgb
+)
+
+# 📌 7️⃣ Configurar hiperparámetros iniciales para XGBoost
+xgb_model = XGBClassifier(
+    objective='binary:logistic',
+    eval_metric='logloss',
+    use_label_encoder=False,
+    random_state=42
+)
+
+# 📌 8️⃣ Definir los Hiperparámetros a Ajustar
+param_grid_xgb = {
+    "n_estimators": [50, 100, 200],  # Número de árboles en el modelo
+    "max_depth": [3, 5, 7],  # Profundidad máxima de cada árbol
+    "learning_rate": [0.01, 0.1, 0.2],  # Tasa de aprendizaje
+    "subsample": [0.8, 1.0],  # Proporción de datos usados en cada iteración
+    "colsample_bytree": [0.8, 1.0]  # Proporción de columnas usadas en cada iteración
+}
+
+# 📌 9️⃣ Entrenar XGBoost con GridSearchCV
+grid_search_xgb = GridSearchCV(
+    xgb_model, param_grid_xgb, cv=StratifiedKFold(n_splits=5), scoring="accuracy", n_jobs=-1
+)
+grid_search_xgb.fit(X_train_xgb, y_train_xgb)
+
+# 📌 🔟 Evaluar el Mejor Modelo Encontrado
+best_xgb_model = grid_search_xgb.best_estimator_
+
+# Predicciones con el mejor modelo
+y_pred_xgb = best_xgb_model.predict(X_test_xgb)
+y_pred_prob_xgb = best_xgb_model.predict_proba(X_test_xgb)[:, 1]
+
+# 📌 1️⃣1️⃣ Ajuste del Umbral de Decisión
+nuevo_umbral = 0.5  # Reducimos el umbral para detectar más eliminados
+y_pred_umbral = (y_pred_prob_xgb >= nuevo_umbral).astype(int)
+
+# 📌 1️⃣2️⃣ Evaluación del Modelo con Nuevo Umbral
+accuracy_xgb = accuracy_score(y_test_xgb, y_pred_umbral)
+conf_matrix_xgb = confusion_matrix(y_test_xgb, y_pred_umbral)
+class_report_xgb = classification_report(y_test_xgb, y_pred_umbral)
+
+# 📌 1️⃣3️⃣ Mostrar Resultados
+print(f"🔹 Mejores Hiperparámetros Encontrados: {grid_search_xgb.best_params_}")
+print(f"🔹 Precisión del Modelo XGBoost con Umbral Ajustado: {accuracy_xgb:.4f}")
+print("\n🔹 Matriz de Confusión con Nuevo Umbral:")
+print(conf_matrix_xgb)
+print("\n🔹 Reporte de Clasificación con Nuevo Umbral:")
+print(class_report_xgb)
+```
+
+<img width="1044" alt="image" src="https://github.com/user-attachments/assets/672b315d-cb89-4a91-b9fb-25fe6878bb33" />
+
+```python
+import numpy as np
+from sklearn.metrics import confusion_matrix, classification_report
+
+# 📌 1️⃣ Establecer el nuevo umbral
+nuevo_umbral = 0.4  # Modificamos el umbral para detectar más eliminados
+
+# 📌 2️⃣ Predecir probabilidades en el conjunto de prueba
+y_pred_prob_xgb = best_xgb_model.predict_proba(X_test_xgb)[:, 1]
+
+# 📌 3️⃣ Convertir a etiquetas según el nuevo umbral
+y_pred_umbral = (y_pred_prob_xgb >= nuevo_umbral).astype(int)
+
+# 📌 4️⃣ Evaluación del modelo con nuevo umbral
+conf_matrix_umbral = confusion_matrix(y_test_xgb, y_pred_umbral)
+class_report_umbral = classification_report(y_test_xgb, y_pred_umbral)
+```
+
+<img width="430" alt="image" src="https://github.com/user-attachments/assets/c761c8b0-02f5-4ca7-9e71-4dab6d69a02c" />
+
+Métricas de rendimiento del modelo:
+
+<img width="916" alt="image" src="https://github.com/user-attachments/assets/b2636886-b2af-4f44-992e-25952461844c" />
+
+<img width="1000" alt="image" src="https://github.com/user-attachments/assets/3bba7933-df8b-40fb-b2ac-e22deece0a0e" />
+
+<img width="1107" alt="image" src="https://github.com/user-attachments/assets/7ac3f2b4-a56a-4d4b-b905-64a577de7584" />
+
+<img width="1087" alt="image" src="https://github.com/user-attachments/assets/879c02ce-12e4-468a-bdc3-656f9c7d313d" />
+
+<img width="747" alt="image" src="https://github.com/user-attachments/assets/b11633d3-1338-453d-8a4a-e0f4e9dc013a" />
+
