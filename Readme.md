@@ -51,7 +51,7 @@ Este estudio busca responder preguntas clave sobre el uso y rendimiento de los s
 - **Jupyter Notebook**: Exploración de datos interactiva.
 - **Excel**: Revisión y validación de datos adicionales.
 
-##EDA
+## EDA
 
 Cargar Archivos:
 
@@ -93,10 +93,25 @@ print(merged_df.head())
 
 
 
+```
 ```python
 merged_df.info()
 
+```
 ![image](https://github.com/user-attachments/assets/03b0dffa-9ff7-413b-8d5e-be616550fbe1)
+
+## Valores faltantes del dataset
+
+<img width="942" alt="image" src="https://github.com/user-attachments/assets/1296d343-ccd9-49db-a3c3-5b2736027a36" />
+
+```python
+business_payments.describe()
+```
+
+<img width="810" alt="image" src="https://github.com/user-attachments/assets/37711358-ff26-4df7-b009-674b96183d67" />
+
+
+
 
 
 
