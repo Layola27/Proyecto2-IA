@@ -498,4 +498,242 @@ usuarios_eliminados["solicitudes_modificadas"] = usuarios_eliminados.groupby("de
 
 <img width="833" alt="image" src="https://github.com/user-attachments/assets/3eabb456-98d5-40da-b52e-781097f0e986" />
 
+## Analisis de relevacia de fechas
+
+<img width="876" alt="image" src="https://github.com/user-attachments/assets/0189f66a-cdb7-4948-8b29-40c3f2712fb1" />
+
+<img width="867" alt="image" src="https://github.com/user-attachments/assets/d0223141-07b5-4b5b-90a6-38a404760aa3" />
+
+<img width="874" alt="image" src="https://github.com/user-attachments/assets/cc70df38-5818-4f5b-8004-a4d777544c8d" />
+
+<img width="854" alt="image" src="https://github.com/user-attachments/assets/37ff22b8-b1eb-46c1-8043-09ff863d3b8d" />
+
+<img width="1022" alt="image" src="https://github.com/user-attachments/assets/0723b699-265d-4637-a08b-39288cc68569" />
+
+<img width="1016" alt="image" src="https://github.com/user-attachments/assets/0e8ff6f8-3565-4013-8267-f3f406249a36" />
+
+<img width="1019" alt="image" src="https://github.com/user-attachments/assets/4cc2894a-8902-467a-8387-898de5cf5f17" />
+
+<img width="1008" alt="image" src="https://github.com/user-attachments/assets/ccc2f0ec-c3dd-4926-8714-c39c94e5a8ae" />
+
+## Analisis cohorte primer solicitud
+
+```python
+usuarios_activos["cohorte_primer_solicitud"] = usuarios_activos.groupby("user_id")["created_at"].transform("min").dt.to_period("M")
+usuarios_eliminados["cohorte_primer_solicitud"] = usuarios_eliminados.groupby("deleted_account_id")["created_at"].transform("min").dt.to_period("M")
+```
+
+<img width="1027" alt="image" src="https://github.com/user-attachments/assets/e71c80a5-8d65-44ef-a553-e6407839cdb6" />
+
+<img width="1036" alt="image" src="https://github.com/user-attachments/assets/cb017ca4-9722-4a7e-a56c-46d0d56ef555" />
+
+<img width="990" alt="image" src="https://github.com/user-attachments/assets/0a87a582-a491-412d-8320-a703464241ae" />
+
+<img width="971" alt="image" src="https://github.com/user-attachments/assets/fd2001e9-866d-4a6e-86da-cbec09751623" />
+
+<img width="1020" alt="image" src="https://github.com/user-attachments/assets/1ed6f2c9-ac12-4818-bac8-228f6b04af05" />
+
+<img width="1017" alt="image" src="https://github.com/user-attachments/assets/ae88759f-8251-4586-8d45-177088e6b8b9" />
+
+<img width="986" alt="image" src="https://github.com/user-attachments/assets/e90d8178-5afa-4909-a773-c1435b01cb38" />
+
+<img width="988" alt="image" src="https://github.com/user-attachments/assets/4c62c5f9-0e0a-471b-8fd6-f25ae6bfa88a" />
+
+## Analisis cohorte vida del usuario
+
+```python
+import pandas as pd
+
+# Calcular el tiempo de vida del usuario (días entre primera y última solicitud)
+usuarios_activos["tiempo_vida"] = (usuarios_activos.groupby("user_id")["created_at"].transform("max") - 
+                                   usuarios_activos.groupby("user_id")["created_at"].transform("min")).dt.days
+
+usuarios_eliminados["tiempo_vida"] = (usuarios_eliminados.groupby("deleted_account_id")["created_at"].transform("max") - 
+                                      usuarios_eliminados.groupby("deleted_account_id")["created_at"].transform("min")).dt.days
+
+# Crear cohortes basados en el tiempo de vida
+def clasificar_tiempo_vida(dias):
+    if dias < 30:
+        return "0-30 días"
+    elif dias < 90:
+        return "1-3 meses"
+    elif dias < 180:
+        return "3-6 meses"
+    elif dias < 365:
+        return "6-12 meses"
+    else:
+        return "Más de 1 año"
+
+usuarios_activos["cohorte_tiempo_vida"] = usuarios_activos["tiempo_vida"].apply(clasificar_tiempo_vida)
+usuarios_eliminados["cohorte_tiempo_vida"] = usuarios_eliminados["tiempo_vida"].apply(clasificar_tiempo_vida)
+```
+
+<img width="884" alt="image" src="https://github.com/user-attachments/assets/11a17d88-547a-49ba-b72e-d5dd1b701936" />
+
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/1203a65d-5303-41b2-932f-493ab6a8f48a" />
+
+<img width="921" alt="image" src="https://github.com/user-attachments/assets/971ad81a-ecaa-44ce-ad09-cd4275eb44ad" />
+
+<img width="877" alt="image" src="https://github.com/user-attachments/assets/f02702df-726f-49ec-9212-17e5938ca2fa" />
+
+## Modelos:
+
+## Modelo de regresión para "adelanto de efectivo por cohorte(primer solicitud) y mes":
+
+Matriz de valores: 
+
+<img width="908" alt="image" src="https://github.com/user-attachments/assets/07b3fcb1-264b-41f4-9eaf-e3c726eb4601" />
+
+Modelos Iniciáles:
+
+<img width="1387" alt="image" src="https://github.com/user-attachments/assets/55967674-a4e0-48bd-8fcd-8a2637e60f45" />
+
+<img width="1380" alt="image" src="https://github.com/user-attachments/assets/77eda97f-3997-4b19-8dd1-390bb10b5d57" />
+
+<img width="1382" alt="image" src="https://github.com/user-attachments/assets/9ecb85d4-8564-4047-b342-210a296ea719" />
+
+Modelo ajustado:
+
+```python
+# 1️⃣ Aplicar la transformación logarítmica en 'amount'
+cohorte_2019_12_log = np.log1p(cohort_revenue.loc['2019-12'].dropna())
+
+# 3️⃣ Separar 80% interpolación y 20% extrapolación
+split_idx = int(len(X) * 0.80)
+X_interp, X_extrap = X_numeric[:split_idx], X_numeric[split_idx:]
+y_interp, y_extrap = y[:split_idx], y[split_idx:]
+
+# 4️⃣ Dentro del 80% de interpolación, dividir en 80% entrenamiento y 20% prueba
+X_train, X_test, y_train, y_test = train_test_split(X_interp, y_interp, test_size=0.20, random_state=42)
+
+# 5️⃣ Ajustar modelo de regresión polinómica con Ridge para evitar sobreajuste
+degree = 4  # Se puede probar con otros grados 
+alpha = 0.0072  # Regularización
+
+poly = PolynomialFeatures(degree)
+X_train_poly = poly.fit_transform(X_train)
+X_test_poly = poly.transform(X_test)
+X_interp_poly = poly.transform(X_interp)
+X_extrap_poly = poly.transform(X_extrap)
+
+# 6️⃣ Entrenar modelo con Ridge
+model = Ridge(alpha=alpha)
+model.fit(X_train_poly, y_train)
+```
+
+<img width="899" alt="image" src="https://github.com/user-attachments/assets/4f1722a3-6e9b-490e-9646-b2108999c31b" />
+
+<img width="788" alt="image" src="https://github.com/user-attachments/assets/e3797bce-b9c2-4523-b2c7-d4b3679ae4b2" />
+
+## Modelo de regresión para "adelanto de efectivo por cohorte(primer solicitud) y semana":
+
+Matriz de valores:
+
+<img width="840" alt="image" src="https://github.com/user-attachments/assets/8ba236e8-4da4-45a7-ad58-00d8780e9cf7" />
+
+Modelos iniciales:
+
+<img width="1402" alt="image" src="https://github.com/user-attachments/assets/c16d95e0-48fb-4413-8a1f-e3e1818e8b11" />
+
+<img width="1398" alt="image" src="https://github.com/user-attachments/assets/f7859bce-3b09-4522-847a-956ba9102ca7" />
+
+<img width="1385" alt="image" src="https://github.com/user-attachments/assets/d1ba5637-f35f-4c02-9257-ebbda0efcf44" />
+
+Busquéda mejores parametros para modelo:
+
+```python
+# Definir rango de grados de polinomio a probar
+degrees = range(1, 16)
+
+# Almacenar resultados
+results = []
+
+# Iterar sobre cada grado de polinomio
+for degree in degrees:
+    # Transformación polinómica
+    poly = PolynomialFeatures(degree)
+    X_train_poly = poly.fit_transform(X_train)
+    X_test_poly = poly.transform(X_test)
+
+    # Modelo Ridge con alpha fijo
+    alpha = 0.01  # Se puede ajustar si es necesario
+    model = Ridge(alpha=alpha)
+    model.fit(X_train_poly, y_train)
+
+    # Predicciones
+    y_train_pred = model.predict(X_train_poly)
+    y_test_pred = model.predict(X_test_poly)
+
+    # Revertir transformación logarítmica
+    y_train_pred_orig = np.expm1(y_train_pred)
+    y_test_pred_orig = np.expm1(y_test_pred)
+    y_train_orig = np.expm1(y_train)
+    y_test_orig = np.expm1(y_test)
+
+    # Calcular métricas de error
+    rmse_train = np.sqrt(mean_squared_error(y_train_orig, y_train_pred_orig))
+    rmse_test = np.sqrt(mean_squared_error(y_test_orig, y_test_pred_orig))
+    r2_train = r2_score(y_train_orig, y_train_pred_orig)
+    r2_test = r2_score(y_test_orig, y_test_pred_orig)
+```
+
+Resultado mejor modelo sin kfold:
+
+<img width="762" alt="image" src="https://github.com/user-attachments/assets/7bdaf850-3dde-4169-99d1-b980c467bb19" />
+
+Boxplot con diferentes grados de polinomio con validación cruzada:
+
+```python
+# Definir rango de grados de polinomio a probar
+degrees = range(1, 16)
+
+# Configurar validación cruzada con K-Fold
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+# Almacenar resultados para los boxplots de RMSE y R²
+rmse_scores = {degree: [] for degree in degrees}
+r2_scores = {degree: [] for degree in degrees}
+
+# Iterar sobre cada grado de polinomio
+for degree in degrees:
+    poly = PolynomialFeatures(degree)
+    X_poly = poly.fit_transform(X_interp)  # Aplicar transformación polinómica
+
+    # Modelo Ridge con alpha fijo
+    alpha = 0.01  # Se puede ajustar si es necesario
+    model = Ridge(alpha=alpha)
+
+    # Validación cruzada con RMSE y R²
+    mse_cv_scores = cross_val_score(model, X_poly, y_interp, cv=kf, scoring=make_scorer(mean_squared_error))
+    r2_cv_scores = cross_val_score(model, X_poly, y_interp, cv=kf, scoring=make_scorer(r2_score))
+
+    # Guardar RMSE (Raíz de MSE) y R²
+    rmse_scores[degree] = np.sqrt(np.abs(mse_cv_scores))  # Convertir MSE a RMSE
+    r2_scores[degree] = np.abs(r2_cv_scores)  # Convertir R² a valores absolutos para escala logarítmica
+```
+
+<img width="1019" alt="image" src="https://github.com/user-attachments/assets/a7fbd12c-a27e-483d-a0b9-ed18267f000e" />
+
+Mejor modelo con kfold:
+
+<img width="761" alt="image" src="https://github.com/user-attachments/assets/f8cde2bf-34b8-4360-8472-37d49899649c" />
+
+Mejor modelo con desviación estandar extendido para predicciones:
+
+<img width="770" alt="image" src="https://github.com/user-attachments/assets/24e7d2de-8d4b-4265-9eb0-06174d12974f" />
+
+Importancia de los pesos en el modelo: 
+
+<img width="742" alt="image" src="https://github.com/user-attachments/assets/947bfb0a-7a6f-41bd-a928-ed261cced4f7" />
+
+
+<img width="746" alt="image" src="https://github.com/user-attachments/assets/a92c89c5-9475-499b-992c-f08c8d8f343a" />
+
+Importancia de pesos en diferentes modelos:
+
+<img width="1038" alt="image" src="https://github.com/user-attachments/assets/844c7bc2-8c5f-4383-ad4a-668fa864cf26" />
+
+<img width="1021" alt="image" src="https://github.com/user-attachments/assets/660a1063-2d83-4fc2-997f-e52613c19670" />
+
+<img width="1028" alt="image" src="https://github.com/user-attachments/assets/ae75f0ea-7cd5-4cfd-9b19-13b709f301f0" />
 
