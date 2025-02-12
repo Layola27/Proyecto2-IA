@@ -497,3 +497,5 @@ usuarios_eliminados["solicitudes_modificadas"] = usuarios_eliminados.groupby("de
 <img width="781" alt="image" src="https://github.com/user-attachments/assets/980374ab-dea0-4ced-b418-77f80c88ebe5" />
 
 <img width="833" alt="image" src="https://github.com/user-attachments/assets/3eabb456-98d5-40da-b52e-781097f0e986" />
+
+
