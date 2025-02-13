@@ -771,7 +771,17 @@ df["cluster_kmeans"] = kmeans.fit_predict(X_scaled)
 dbscan = DBSCAN(eps=0.8, min_samples=5)  # Ajustar parámetros según datos
 df["cluster_dbscan"] = dbscan.fit_predict(X_scaled)
 ```
+<img width="736" alt="image" src="https://github.com/user-attachments/assets/149b2ccf-c9d7-4c51-a8b3-4e4caf0dc5cd" />
+
+<img width="729" alt="image" src="https://github.com/user-attachments/assets/6db7f93a-2639-4386-a833-6c5ead92d7bb" />
+
+<img width="747" alt="image" src="https://github.com/user-attachments/assets/91ed3c04-2f27-4ac2-913c-ed17e8ee2c60" />
+
+<img width="745" alt="image" src="https://github.com/user-attachments/assets/e20e50ec-4055-4437-9173-c7abd3c0ed77" />
+
+
 <img width="619" alt="image" src="https://github.com/user-attachments/assets/408816c0-94fb-495f-8dc0-f350acd573c0" />
+
 
 Primer modelo:
 
