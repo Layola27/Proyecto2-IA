@@ -51,18 +51,7 @@ Este estudio busca responder preguntas clave sobre el uso y rendimiento de los s
 - **Jupyter Notebook**: Exploración de datos interactiva.
 - **Excel**: Revisión y validación de datos adicionales.
 
-## EDA
-
-Cargar Archivos:
-
-```python
-import pandas as pd
-# Cargar los datasets
-fees_path = "drive/MyDrive/ColabNotebooks/Business_Payments/extract - fees - data analyst - .csv"
-cash_request_path = "drive/MyDrive/ColabNotebooks/Business_Payments/extract - cash request - data analyst.csv"
-
-fees_df = pd.read_csv(fees_path)
-cash_request_df = pd.read_csv(cash_request_path)
+## DATASET
 
 Join (Left):
 
@@ -85,145 +74,7 @@ merged_df = cash_request_df.merge(
     suffixes=("", "_fees")  # Agregar sufijo "_fees" a las columnas duplicadas
 )
 
-# Eliminar la columna cash_request_id de fees después del merge, ya que es redundante
-merged_df.drop(columns=["cash_request_id"], inplace=True)
-
-# Mostrar las primeras filas para verificar la fusión
-print(merged_df.head())
-
-
-
 ```
-```python
-merged_df.info()
-
-```
-![image](https://github.com/user-attachments/assets/03b0dffa-9ff7-413b-8d5e-be616550fbe1)
-
-```python
-business_payments.describe()
-```
-
-<img width="810" alt="image" src="https://github.com/user-attachments/assets/37711358-ff26-4df7-b009-674b96183d67" />
-## Valores faltantes del dataset
-
-Left Join:
-
-<img width="942" alt="image" src="https://github.com/user-attachments/assets/1296d343-ccd9-49db-a3c3-5b2736027a36" />
-
-
-
-Activos/Eliminados: 
-
-<img width="1220" alt="image" src="https://github.com/user-attachments/assets/cc1115ca-31e4-4b26-98a1-11112c5d8a81" />
-
-
-
-## Valores Categoricos
-
-Join:
-
-<img width="1300" alt="image" src="https://github.com/user-attachments/assets/00b5b172-7825-485a-804e-cf2f1335169a" />
-
-<img width="1300" alt="image" src="https://github.com/user-attachments/assets/f2757268-6514-476b-952c-f826837063a7" />
-
-<img width="1323" alt="image" src="https://github.com/user-attachments/assets/6539b513-08ec-422e-9d42-4d9c3122357a" />
-
-<img width="1267" alt="image" src="https://github.com/user-attachments/assets/19b05959-3af0-44d9-9051-f7b63308f10a" />
-
-<img width="1309" alt="image" src="https://github.com/user-attachments/assets/576d2785-159d-4d5e-b0ed-a3c91e9beb1e" />
-
-<img width="1349" alt="image" src="https://github.com/user-attachments/assets/69aad150-58a6-4d3b-bc0f-384557d7a768" />
-
-<img width="1349" alt="image" src="https://github.com/user-attachments/assets/ce577ee9-8bf7-4c87-a0d4-fe0ae197ca81" />
-
-
-Activos:
-
-<img width="1227" alt="image" src="https://github.com/user-attachments/assets/07a13b90-aee6-4311-9980-728a474b929c" />
-
-<img width="1057" alt="image" src="https://github.com/user-attachments/assets/d4d92f49-04f0-48a8-986d-74c335508d30" />
-
-
-Eliminados: 
-
-<img width="1077" alt="image" src="https://github.com/user-attachments/assets/4e8dd6a0-2646-40f0-af42-9bab11a1f961" />
-
-<img width="1209" alt="image" src="https://github.com/user-attachments/assets/b2cf4089-5c37-4ef1-9db4-619bab91dbdb" />
-
-## Boxplot
-
-Join:
-
-<img width="1163" alt="image" src="https://github.com/user-attachments/assets/a7489cdf-e1e6-42e5-8ea2-6dcc58aa378a" />
-
-<img width="1128" alt="image" src="https://github.com/user-attachments/assets/83479ce4-d1ca-4928-97e1-19702dfe15e0" />
-
-Activos/Eliminados:
-
-<img width="803" alt="image" src="https://github.com/user-attachments/assets/a75a452f-41c4-4a87-8f90-5020515e318c" />
-<img width="793" alt="image" src="https://github.com/user-attachments/assets/1352f903-950f-4568-918b-bb2c5ba53bda" />
-
-## Violinplot
-
-Join:
-
-<img width="1170" alt="image" src="https://github.com/user-attachments/assets/1d40929f-f6f6-472e-aa32-c63a88087ce4" />
-
-<img width="1136" alt="image" src="https://github.com/user-attachments/assets/4d176a16-9094-4e1c-b339-40d7545e3d6a" />
-
-<img width="1035" alt="image" src="https://github.com/user-attachments/assets/5d182636-a35e-4154-bfd4-5f6fc7876d36" />
-
-<img width="1171" alt="image" src="https://github.com/user-attachments/assets/04eeb90c-9828-44f0-b67e-65d69ec0a897" />
-
-<img width="1193" alt="image" src="https://github.com/user-attachments/assets/38ca9027-1d2d-4182-9b8c-7682fb0caeb2" />
-
-Activos/Eliminados:
-
-<img width="794" alt="image" src="https://github.com/user-attachments/assets/5f0c1798-40e3-412c-ae6e-31f0e71986b1" />
-
-<img width="816" alt="image" src="https://github.com/user-attachments/assets/39ac7358-94aa-4e80-a7da-f0ecdafece5d" />
-
-## Dispersión
-
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/f66c9c5d-16be-4e5e-9b13-fdfda35a3ba0" />
-
-<img width="801" alt="image" src="https://github.com/user-attachments/assets/1a352b7f-e9f8-4514-9e69-02d4606acbc5" />
-
-<img width="789" alt="image" src="https://github.com/user-attachments/assets/6b95510d-dda0-46d6-b01a-d6bdf416e93d" />
-
-<img width="807" alt="image" src="https://github.com/user-attachments/assets/92c79ce8-a82d-4bf1-8c96-310088690ab8" />
-
-<img width="812" alt="image" src="https://github.com/user-attachments/assets/65a0a2f1-9bcf-4429-84c0-c43691a94ac1" />
-
-Con tendencia:
-
-<img width="620" alt="image" src="https://github.com/user-attachments/assets/1a7556d3-c7d5-4e94-81ff-295495e36996" />
-
-<img width="708" alt="image" src="https://github.com/user-attachments/assets/a55f8b38-30a7-4c1c-a6ff-a1b279ea2170" />
-
-## Series Temporales
-
-Join:
-
-<img width="963" alt="image" src="https://github.com/user-attachments/assets/6848d581-d472-4833-b120-e5cac7fb5975" />
-
-<img width="944" alt="image" src="https://github.com/user-attachments/assets/42d762f1-60db-4a8a-a684-01156f877351" />
-
-<img width="946" alt="image" src="https://github.com/user-attachments/assets/23f579ca-0c8c-471d-be3b-d52fe56a6e42" />
-
-<img width="938" alt="image" src="https://github.com/user-attachments/assets/311c9c60-d55b-46e8-bd94-1669012a5abe" />
-
-<img width="938" alt="image" src="https://github.com/user-attachments/assets/6798fd27-309c-4424-afb2-2e68bdbb0c3c" />
-
-<img width="958" alt="image" src="https://github.com/user-attachments/assets/0101e7c8-0f08-4f27-ad7a-27b3691fff67" />
-
-Activos/Eliminados:
-
-<img width="1189" alt="image" src="https://github.com/user-attachments/assets/7b9698ac-9c5c-4ccb-9497-ddc0d3e4e681" />
-
-<img width="1191" alt="image" src="https://github.com/user-attachments/assets/9a653250-9280-4592-9f00-8d5d2eba307f" />
-
 
 ## INGENIERIA DE DATOS
 
@@ -420,6 +271,54 @@ usuarios_eliminados["solicitudes_modificadas"] = usuarios_eliminados.groupby("de
 
 ## Graficaciones nuevas variables Activos/Eliminados:
 
+## Correlación:
+
+<img width="921" alt="image" src="https://github.com/user-attachments/assets/0999e2bf-7183-4a51-a620-5f27701c488f" />
+
+<img width="590" alt="image" src="https://github.com/user-attachments/assets/d9834953-2ac5-452c-a8ce-dee14894efb2" />
+
+<img width="930" alt="image" src="https://github.com/user-attachments/assets/caea4451-4aae-40c1-b3f2-8cb645459383" />
+
+<img width="555" alt="image" src="https://github.com/user-attachments/assets/066bd852-2d56-41a5-99e4-6a495a126fd4" />
+
+Validar la causalidad entre variables con modelo de regresión multiple (statsmodels):
+
+```python
+def analizar_causalidad(data, var_x, var_y):
+    # Seleccionar solo columnas numéricas
+    data = data.select_dtypes(include=['number'])
+
+    # Verificar si existen otras variables que puedan ser confusoras
+    confusores = [col for col in data.columns if col not in [var_x, var_y]]
+
+    if not confusores:
+        print(f"\nNo hay confusores disponibles para la relación {var_x} -> {var_y}. Se realizará una regresión simple.")
+        X = data[[var_x]]
+    else:
+        print(f"\nEvaluando causalidad de {var_x} sobre {var_y} controlando por {confusores}.")
+        X = data[[var_x] + confusores]
+
+    y = data[var_y]
+
+    # Eliminar filas con valores NaN o infinitos
+    df = pd.concat([X, y], axis=1).dropna().replace([np.inf, -np.inf], np.nan).dropna()
+
+    # Separar X e y después de limpiar datos
+    X = df.drop(columns=[var_y])
+    y = df[var_y]
+
+    # Agregar una constante para la regresión
+    X = sm.add_constant(X)
+
+    # Ajustar el modelo de regresión
+    modelo = sm.OLS(y, X).fit()
+
+    return modelo.summary()
+```
+<img width="756" alt="image" src="https://github.com/user-attachments/assets/a58fa434-ceea-4914-b698-79e7c2bfaf71" />
+
+<img width="723" alt="image" src="https://github.com/user-attachments/assets/50c4a3b9-05f5-4b78-a44f-68c2c363049d" />
+
 ## Histogramas:
 
 <img width="1182" alt="image" src="https://github.com/user-attachments/assets/30c91e4b-8e90-4380-98e8-99ab265e2630" />
@@ -466,37 +365,47 @@ usuarios_eliminados["solicitudes_modificadas"] = usuarios_eliminados.groupby("de
 
 ## Dispersión con tendencia
 
-<img width="719" alt="image" src="https://github.com/user-attachments/assets/7bd81cba-ae27-47dd-af24-244c87ad2b44" />
+<img width="569" alt="image" src="https://github.com/user-attachments/assets/3e127d48-e88b-476c-b14a-c353ecf52a01" />
 
-<img width="849" alt="image" src="https://github.com/user-attachments/assets/e2eb6f27-66c0-417f-a8cb-de8a6c899fc4" />
+<img width="677" alt="image" src="https://github.com/user-attachments/assets/6b137f19-5e0e-4910-ae77-ffb0acb19ff5" />
 
-<img width="676" alt="image" src="https://github.com/user-attachments/assets/9f7d1db5-abf5-4e5f-ae03-527edb227d4b" />
+<img width="611" alt="image" src="https://github.com/user-attachments/assets/71bc4591-10cf-4114-b8a7-b26d6d0b4efc" />
 
-<img width="750" alt="image" src="https://github.com/user-attachments/assets/8975ce8b-9444-497a-b5bf-6d2e6469a258" />
+<img width="606" alt="image" src="https://github.com/user-attachments/assets/5fc8bf6b-af38-44ad-bbff-61417fa2415b" />
 
-<img width="643" alt="image" src="https://github.com/user-attachments/assets/07b2c4c2-3488-44a5-9818-fd31c4f85bc1" />
+<img width="661" alt="image" src="https://github.com/user-attachments/assets/578c859e-dfa7-40db-80b4-a0f588afee68" />
 
-<img width="616" alt="image" src="https://github.com/user-attachments/assets/773f4d1a-88b2-4119-bc11-2c0615b72c79" />
+<img width="591" alt="image" src="https://github.com/user-attachments/assets/a0265ba0-c1f4-4f57-a9b1-9cae487a2f92" />
 
-<img width="651" alt="image" src="https://github.com/user-attachments/assets/e953dadb-c1b6-4f8f-9fe0-e57b2f8fed7a" />
+<img width="577" alt="image" src="https://github.com/user-attachments/assets/8953662d-8015-4998-ba91-4a2f06083d96" />
 
-<img width="696" alt="image" src="https://github.com/user-attachments/assets/5c892e78-6240-4fa8-bd2d-03097538c649" />
+<img width="649" alt="image" src="https://github.com/user-attachments/assets/057ac1f5-339c-411d-b9c0-0dbd19c6c055" />
 
-<img width="835" alt="image" src="https://github.com/user-attachments/assets/f9f07676-9bba-42f9-9a53-b0b657dd5c70" />
+<img width="776" alt="image" src="https://github.com/user-attachments/assets/5c9050c8-cb7c-42b4-8f1c-e9d30c160c8a" />
 
-<img width="987" alt="image" src="https://github.com/user-attachments/assets/c7d21a4e-c212-43a0-b2b4-b003a43a75f8" />
+<img width="895" alt="image" src="https://github.com/user-attachments/assets/fbbdf9b9-0c61-4455-8c4e-ba5e9ec3eae0" />
 
-<img width="753" alt="image" src="https://github.com/user-attachments/assets/03907077-14eb-4c4c-9720-ac18fa56f5e0" />
+<img width="812" alt="image" src="https://github.com/user-attachments/assets/062f37fd-f7ed-4a71-acae-5e31f643e297" />
 
-<img width="882" alt="image" src="https://github.com/user-attachments/assets/664899d2-32de-4070-9fc9-6981b42be501" />
+<img width="708" alt="image" src="https://github.com/user-attachments/assets/143ce5f1-1a9f-4c4f-bae2-b7ae6992e1cf" />
 
-<img width="770" alt="image" src="https://github.com/user-attachments/assets/0f47d52d-58eb-44b8-8d28-b4071b506cbc" />
+<img width="726" alt="image" src="https://github.com/user-attachments/assets/592cdbfc-813a-49d5-b1c1-66816406a588" />
 
-<img width="721" alt="image" src="https://github.com/user-attachments/assets/0b1adb40-ed73-4983-894c-30401f233818" />
+<img width="763" alt="image" src="https://github.com/user-attachments/assets/15e2a5eb-05b0-4cf0-a009-895cb8dc24ee" />
 
-<img width="781" alt="image" src="https://github.com/user-attachments/assets/980374ab-dea0-4ced-b418-77f80c88ebe5" />
+<img width="693" alt="image" src="https://github.com/user-attachments/assets/0b6eee3a-eb11-4722-b4f9-e4b34ce70b24" />
 
-<img width="833" alt="image" src="https://github.com/user-attachments/assets/3eabb456-98d5-40da-b52e-781097f0e986" />
+<img width="689" alt="image" src="https://github.com/user-attachments/assets/cef338fb-0c66-4990-a57f-1859e4efdf4c" />
+
+## Series temporales amount y num. de transacciones
+
+<img width="560" alt="image" src="https://github.com/user-attachments/assets/b830f0b8-ba4e-4a10-97b6-01ad9618fffd" />
+
+<img width="676" alt="image" src="https://github.com/user-attachments/assets/7df10922-47c3-4eb2-a42b-a0f7c4bf81e9" />
+
+<img width="785" alt="image" src="https://github.com/user-attachments/assets/adfb2e6d-2402-4548-a005-1ee1819c1cab" />
+
+<img width="593" alt="image" src="https://github.com/user-attachments/assets/0ef187a0-5f60-4185-bfbd-a5997483709c" />
 
 ## Analisis de relevacia de fechas
 
@@ -523,21 +432,22 @@ usuarios_activos["cohorte_primer_solicitud"] = usuarios_activos.groupby("user_id
 usuarios_eliminados["cohorte_primer_solicitud"] = usuarios_eliminados.groupby("deleted_account_id")["created_at"].transform("min").dt.to_period("M")
 ```
 
-<img width="1027" alt="image" src="https://github.com/user-attachments/assets/e71c80a5-8d65-44ef-a553-e6407839cdb6" />
+<img width="882" alt="image" src="https://github.com/user-attachments/assets/262c706a-3483-462b-b251-ef59514c04d6" />
 
-<img width="1036" alt="image" src="https://github.com/user-attachments/assets/cb017ca4-9722-4a7e-a56c-46d0d56ef555" />
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/ad7376eb-cd86-4052-bcf2-e75aa3d2021a" />
 
-<img width="990" alt="image" src="https://github.com/user-attachments/assets/0a87a582-a491-412d-8320-a703464241ae" />
+<img width="851" alt="image" src="https://github.com/user-attachments/assets/9f86fb11-d05d-4c35-bcbd-1c5dab956ea2" />
 
-<img width="971" alt="image" src="https://github.com/user-attachments/assets/fd2001e9-866d-4a6e-86da-cbec09751623" />
+<img width="830" alt="image" src="https://github.com/user-attachments/assets/618862f2-cd64-4e3f-b66d-c93ffe7a3013" />
 
-<img width="1020" alt="image" src="https://github.com/user-attachments/assets/1ed6f2c9-ac12-4818-bac8-228f6b04af05" />
+<img width="879" alt="image" src="https://github.com/user-attachments/assets/eea59135-0587-49cb-b561-dc52aa272597" />
 
-<img width="1017" alt="image" src="https://github.com/user-attachments/assets/ae88759f-8251-4586-8d45-177088e6b8b9" />
+<img width="868" alt="image" src="https://github.com/user-attachments/assets/4fbe4c38-69ec-4332-a3ca-4a2ce54cce7e" />
 
-<img width="986" alt="image" src="https://github.com/user-attachments/assets/e90d8178-5afa-4909-a773-c1435b01cb38" />
+<img width="819" alt="image" src="https://github.com/user-attachments/assets/cc843ef2-439e-47de-88eb-568716689cfd" />
 
-<img width="988" alt="image" src="https://github.com/user-attachments/assets/4c62c5f9-0e0a-471b-8fd6-f25ae6bfa88a" />
+<img width="831" alt="image" src="https://github.com/user-attachments/assets/5dcac64b-9873-426d-911e-bc92bd3548ea" />
+
 
 ## Analisis cohorte vida del usuario
 
